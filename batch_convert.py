@@ -10,9 +10,11 @@ endpoint = f"https://{service_region}.api.cognitive.microsoft.com/speechtotext/v
 
 ###########################################################
 
-# Call API to initiate batch transcription 
+### Call API to initiate batch transcription 
 
 print("Calling API to transcribe file...")
+
+# Setup call parameters
 headers = {
     'Ocp-Apim-Subscription-Key': subscription_key,
     'Content-Type':'application/json'
@@ -36,13 +38,12 @@ data = {
     }
 }
 
+# Make POST call to cog services API
 res = requests.post(endpoint, headers=headers, data=json.dumps(data))
-print("Printing results...")
 
-# Monitor batch transcription jobs until they are complete 
-res_file = requests.get(res.json()["links"]["files"],
-                        headers={"Ocp-Apim-Subscription-Key":subscription_key})
-status = json.loads(res_file.text)
+## Monitor batch transcription jobs until they are complete 
+print("Monitoring for transcription job completion...")
+status = {}; status["values"] = []
 
 while status["values"] == []:
     print("Not complete yet. Waiting...")
@@ -50,8 +51,9 @@ while status["values"] == []:
     res_file = requests.get(res.json()["links"]["files"],
                             headers={"Ocp-Apim-Subscription-Key":subscription_key})
     status = json.loads(res_file.text)
+print("Transcriptions complete!")
 
-# Gather transcription job results
+## Gather transcription job results
 print("Collecting transcription results...")
 
 transcriptions = []
