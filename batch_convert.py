@@ -43,14 +43,14 @@ res = requests.post(endpoint, headers=headers, data=json.dumps(data))
 
 ## Monitor batch transcription jobs until they are complete 
 print("Monitoring for transcription job completion...")
-status = {}; status["values"] = []
+job_results = []
 
-while status["values"] == []:
+while job_results == []:
     print("Not complete yet. Waiting...")
     time.sleep(5)
     res_file = requests.get(res.json()["links"]["files"],
                             headers={"Ocp-Apim-Subscription-Key":subscription_key})
-    status = json.loads(res_file.text)
+    job_results = json.loads(res_file.text)["values"]
 print("Transcriptions complete!")
 
 ## Gather transcription job results
@@ -58,7 +58,7 @@ print("Collecting transcription results...")
 
 transcriptions = []
 treports = []
-for z in status["values"]:
+for z in job_results:
     url = z["links"]["contentUrl"]
     res_final = requests.get(url,
                             headers={"Ocp-Apim-Subscription-Key":subscription_key})
