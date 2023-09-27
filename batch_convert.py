@@ -1,5 +1,4 @@
 import requests
-# import numpy as np
 import time
 import json
 
@@ -8,13 +7,16 @@ from config import service_region, subscription_key, source_files, results_blob
 # Cognitive Services endpoint
 endpoint = f"https://{service_region}.api.cognitive.microsoft.com/speechtotext/v3.1/transcriptions"
 
+# Create azure blob navigation and list creation
+
 ###########################################################
 
 ### Call API to initiate batch transcription 
 
 print("Calling API to transcribe file...")
 
-# Setup call parameters
+# Setup call parameters 
+# For parameters reference this page: https://eastus.dev.cognitive.microsoft.com/docs/services/speech-to-text-api-v3-1/operations/Transcriptions_Create
 headers = {
     'Ocp-Apim-Subscription-Key': subscription_key,
     'Content-Type':'application/json'
@@ -28,13 +30,19 @@ data = {
 #    'model':np.NaN,
     'properties':{
         "wordLevelTimestampsEnabled": True,
-#         'diarization':'true',
+         'diarization':{
+             "speakers":{
+                 "minCount": 1,
+                 "maxCount":30
+                 }
+             },
          "diarizationEnabled":True,
+         'profanityFilterMode':"None",
          "languageIdentification": {
           "candidateLocales": [
             "en-US", "de-DE", "es-ES"
-          ],
-        }
+            ],
+         }
     }
 }
 
@@ -50,7 +58,9 @@ while job_results == []:
     time.sleep(5)
     res_file = requests.get(res.json()["links"]["files"],
                             headers={"Ocp-Apim-Subscription-Key":subscription_key})
+    
     job_results = json.loads(res_file.text)["values"]
+
 print("Transcriptions complete!")
 
 ## Gather transcription job results
@@ -71,3 +81,9 @@ for z in job_results:
         print(res_final.text)
     else:
         print("Unknown report type found!")
+
+
+
+
+
+
